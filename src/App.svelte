@@ -1,8 +1,16 @@
 <script lang="ts">
-  let pg = 1;
+  let pg: number = 1;
   let svg = '';
+  let ticking: boolean = false;
+  const TEXTBOOK_LEN = 729;
 
-  const adjust = async (nPg: number) => {
+  // class textbook {
+  //   pg: number;
+  //   private BOOK_LEN = 729;
+  //   constructor() {}
+  // }
+
+  const adjust = async (_newPg: number) => {
     try {
       const stream = await fetch(`textbook/p${pg}.svg`);
       svg = await stream.text();
@@ -11,6 +19,9 @@
     }
   };
 
+  const decrement = () => (pg - 1 < 1 ? pg : pg--);
+  const increment = () => (pg + 1 > TEXTBOOK_LEN ? pg : pg++);
+
   $: {
     adjust(pg);
   }
@@ -18,11 +29,11 @@
   const handleKeyDown = (e: KeyboardEvent) => {
     switch (e.code) {
       case 'ArrowRight': {
-        pg += 1;
+        increment();
         break;
       }
       case 'ArrowLeft': {
-        pg -= 1;
+        decrement();
         break;
       }
       default: {
@@ -30,13 +41,36 @@
       }
     }
   };
+
+  const handleWheel = (deltaY: number) => {
+    // If we're scrolling down
+    if (deltaY > 0) {
+      increment();
+    }
+    // If we're scrolling up
+    else {
+      decrement();
+    }
+  };
+
+  const throttleWheel = (e: WheelEvent) => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        handleWheel(e.deltaY);
+        ticking = false;
+      });
+
+      ticking = true;
+    }
+  };
 </script>
 
-<svelte:window on:keydown={(e) => handleKeyDown(e)} />
+<svelte:window on:keydown={(e) => handleKeyDown(e)} on:wheel={throttleWheel} />
 
 <main>
   <div class="page-input">
-    <input bind:value={pg} type="text" />
+    p. <input bind:value={pg} type="text" />
+    <span class="comment">// scroll or use &#8592; and &#8594;</span>
   </div>
   <div class="svg">{@html svg}</div>
 </main>
@@ -56,6 +90,13 @@
     justify-self: center;
   }
 
+  input {
+    border: none;
+    border-bottom: 1px solid #2b2b2b;
+    border-radius: 0%;
+    outline: none;
+  }
+
   .svg {
     margin: 0 auto;
     width: 75vh;
@@ -63,5 +104,9 @@
 
   main {
     overflow: hidden;
+  }
+
+  .comment {
+    color: lightgrey;
   }
 </style>
