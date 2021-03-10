@@ -14,9 +14,7 @@
     try {
       const stream = await fetch(`textbook/p${pg}.svg`);
       svg = await stream.text();
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   };
 
   const decrement = () => (pg - 1 < 1 ? pg : pg--);
@@ -69,8 +67,14 @@
 
 <main>
   <div class="page-input">
-    p. <input bind:value={pg} type="text" />
-    <span class="comment">// scroll or use &#8592; and &#8594;</span>
+    <div>
+      p. <input
+        type="number"
+        bind:value={pg}
+        on:scroll={(e) => e.preventDefault()}
+      />
+      <span class="comment">// scroll or use &#8592; and &#8594;</span>
+    </div>
   </div>
   <div class="svg">{@html svg}</div>
 </main>
@@ -79,27 +83,61 @@
   :global(body, html) {
     margin: 0;
     padding: 0;
+    width: 100%;
+    height: 100%;
   }
 
   main {
+    width: 100%;
+    height: 100%;
     display: grid;
+    grid-template-rows:
+      auto
+      minmax(0, 1fr);
   }
 
   .page-input {
-    align-self: center;
-    justify-self: center;
-  }
+    align-self: stretch;
+    justify-self: stretch;
+    display: grid;
+    & > * {
+      justify-self: center;
+      & > input {
+        border: none;
+        border-bottom: 1px solid #2b2b2b;
+        border-radius: 0%;
+        outline: none;
 
-  input {
-    border: none;
-    border-bottom: 1px solid #2b2b2b;
-    border-radius: 0%;
-    outline: none;
+        // disable input
+        -moz-appearance: textfield;
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+      }
+    }
   }
-
   .svg {
-    margin: 0 auto;
-    width: 75vh;
+    display: grid;
+    height: 100%;
+    max-height: 100%;
+    width: 100%;
+    max-width: 100%;
+
+    justify-self: end;
+    align-self: center;
+    & > :global(svg, img) {
+      display: block;
+      width: auto;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+
+      align-self: center;
+      justify-self: center;
+    }
   }
 
   main {
