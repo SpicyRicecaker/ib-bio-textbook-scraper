@@ -94,6 +94,7 @@
     grid-template-rows:
       auto
       minmax(0, 1fr);
+    background-color: #292828;
   }
 
   .page-input {
